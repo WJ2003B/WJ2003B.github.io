@@ -133,3 +133,64 @@
   span.highlight {
     background-color: #ffffd0;
   }
+
+/* LaTeX-style Math Support */
+/* MathJax styling */
+.MathJax {
+  font-size: 1em !important;
+}
+
+.MathJax_Display {
+  text-align: center;
+  margin: 1em 0;
+}
+
+/* KaTeX styling */
+.katex {
+  font-size: 1em;
+}
+
+.katex-display {
+  text-align: center;
+  margin: 1em 0;
+}
+
+/* Custom LaTeX-style classes */
+.math-latex {
+  font-family: "Computer Modern", "Latin Modern Math", "Times New Roman", serif;
+  font-style: normal;
+}
+
+.math-inline {
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.math-display {
+  display: block;
+  text-align: center;
+  margin: 1.5em 0;
+  overflow-x: auto;
+}
+
+/* Equation numbering */
+.equation-number {
+  float: right;
+  margin-top: 0.5em;
+  font-family: 'Lato', Verdana, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+/* Math environments */
+.theorem, .lemma, .proof, .definition {
+  margin: 1em 0;
+  padding: 0.5em;
+  border-left: 3px solid #1772d0;
+  background-color: #f8f9fa;
+}
+
+.theorem-title, .lemma-title, .proof-title, .definition-title {
+  font-weight: bold;
+  font-style: italic;
+  margin-bottom: 0.5em;
+}
