@@ -42,16 +42,16 @@
               </td>
             </tr>
           </tbody></table>
-          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+          <!-- <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
               <tr>
                 <h2>Research</h2>
               <td style="padding:20px;width:100%;vertical-align:middle">
                 <p>
-                  My research interests have been driven by the idea of <i>compositional generalization</i> in the context of robot learning. If we want autonomous agents to learn complex tasks that are composed of simpler tasks seen in the training set, we need to design our policies such that we can achieve this "stitching" behavior without explicit planning. I believe this to be a representation learning problem, and I am interesting in seeing how can we use effective representations in policy learning to solve this problem.
+                  My research interests have been driven by the idea of <i>horizon generalization</i>. If we want autonomous agents to learn complex tasks that are composed of simpler tasks seen in the training set, we need to design our policies such that we can achieve this "stitching" behavior without explicit planning. I believe this to be a representation learning problem, and I am interesting in seeing how can we use effective representations in policy learning to solve this problem.
                 </p>
               </td>
             </tr>
-          </tbody></table>
+          </tbody></table> -->
           <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody></tbody>
             <h2>News</h2>
             <td style="padding:20px;width:100%;vertical-align:middle">
@@ -67,7 +67,51 @@
 
             <tr onmouseout="nuvo_stop()" onmouseover="nuvo_start()">
               <h2>Selected Publications</h2>
-
+              <tr>
+                <td style="padding:20px;width:25%;vertical-align:middle">
+                 
+                  <div class="one">
+      
+                    <div class="two" id='nuvo_image'><video  width=100% muted autoplay loop>
+                      <source src="images/nuvo.mp4" type="video/mp4">
+                      Your browser does not support the video tag.
+                      </video></div>
+                      <img src='images/mainfig_mqe.svg' width=100%></div>
+                  </div>
+                  <script type="text/javascript">
+                    function nuvo_start() {
+                      document.getElementById('nuvo_image').style.opacity = "1";
+                    }
+          
+                    function nuvo_stop() {
+                      document.getElementById('nuvo_image').style.opacity = "0";
+                    }
+                    nuvo_stop()
+                  </script>
+                </td>
+                <td style="padding:20px;width:75%;vertical-align:middle">
+                  <a href="https://mqe-paper.github.io/">
+                    <span class="papertitle">Multistep Quasimetric Learning for Scalable Goal-conditioned Reinforcement Learning</span>
+                  </a>
+                  <br>
+                  <strong>Bill Zheng</strong>,
+                  <a href="https://people.eecs.berkeley.edu/~vmyers/">Vivek Myers</a>,
+                  <a href="https://ben-eysenbach.github.io/">Benjamin Eysenbach</a>,
+                  <a href="https://people.eecs.berkeley.edu/~svlevine/">Sergey Levine</a>
+                  <br>
+                  <em>Preprint</em>
+                  <br>
+                  <a href="https://arxiv.org/pdf/2511.07730">paper</a> /
+                  <a href="https://mqe-paper.github.io">website</a> / 
+                  <!-- <a href="https://github.com/vivekmyers/tmd-release/">code</a> / -->
+                  <!-- <a href="https://arxiv.org/abs/2509.20478">arXiv</a> -->
+                  <p></p>
+                  <p>
+                  We demonstrate the effectiveness of using quasimetric distance representations in horizon-generalization by performing multistep backups. This allows us to scale up compositional tasks to real-world, pixel-based tasks using offline GCRL. 
+                  </p>
+                </td>
+                </tr>
+              <tr>
               <td style="padding:20px;width:25%;vertical-align:middle">
                
                 <div class="one">
@@ -119,7 +163,7 @@
                 <div class="one">
     
                   <div class="two" id='nuvo_image'><video  width=100% muted autoplay loop>
-                  <source src="images/nuvo.mp4" type="video/mp4">
+                  <source src="images/tra.mp4" type="video/mp4">
                   Your browser does not support the video tag.
                   </video></div>
                   <img src='images/demo2.png' width=100%>
@@ -242,9 +286,17 @@
           <table width="100%" align="center" border="0" cellspacing="0" cellpadding="20"><tbody></tbody>
             <tr>
               <td>
-                <h3>Miscellaneous</h3>
+                <h2>Miscellaneous</h2>
+                <p>I grew up in Orange County, California, so my collection of favorite sports teams are peculiar (Go Warriors, 49ers, Angels, and Ducks!). In my (somewhat) free time, I like to enjoy the following:</p>
+            <ul>
+              <li>Classical music (My favorite composers are Sergei Rachmaninoff, Richard Strauss, and Dmitri Shostakovich).</li>
+              <li>Sports analytics. <a href="https://www.youtube.com/thinkingbasketball">Thinking Basketball</a> and <a href="https://www.youtube.com/@michaelmackelvie">Michael MacKelvie</a> on YouTube are good introductions if you want to get to know more about NBA and NFL analytics.</li>
+              <li>Playing Civilization (5 and 6).</li>
+              <li>Weightlifting.</li>
+              <li>Pedagogy.</li>
+              <li>Cooking (mostly grilling).</li>
+            </ul>
               </td>
-
             </tr>
 
           </tbody></table>
