@@ -1,0 +1,641 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>The Hitchhiker's Guide to Contrastive Learning in RL | Bill Zheng</title>
+
+    <meta name="author" content="Bill Zheng">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="../images/seal.svg" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="./style.css">
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
+    <style>
+      html { scroll-behavior: smooth; }
+
+      h2 {
+        font-weight: bold;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 1.8em;
+        margin-bottom: 0.4em;
+        color: #222;
+      }
+
+      h4 {
+        font-size: 18px;
+        font-weight: bold;
+        font-style: italic;
+        margin-top: 1.4em;
+        margin-bottom: 0.3em;
+        color: #333;
+      }
+
+      /* Reading progress bar */
+      #progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: #1772d0;
+        width: 0%;
+        z-index: 1000;
+        transition: width 0.1s linear;
+      }
+
+      /* Table of contents */
+      .toc {
+        background: #f8f9fa;
+        border-left: 3px solid #1772d0;
+        padding: 1em 1.5em;
+        margin: 1.5em 0 2em 0;
+        border-radius: 0 4px 4px 0;
+      }
+      .toc-title {
+        font-weight: bold;
+        font-size: 15px;
+        color: #333;
+        margin-bottom: 0.6em;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .toc ol {
+        margin: 0;
+        padding-left: 1.4em;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+      .toc li { margin: 0.15em 0; }
+      .toc a { color: #1772d0; }
+      .toc a:hover { color: #f09228; }
+      .toc ol ol {
+        list-style-type: lower-alpha;
+        padding-left: 1.2em;
+        font-size: 15px;
+      }
+
+      /* Styled equation box */
+      .eq-box {
+        background: #f0f4ff;
+        border: 1px solid #c5d3f0;
+        border-radius: 6px;
+        padding: 0.9em 1.5em;
+        margin: 1.1em 0;
+        text-align: center;
+        overflow-x: auto;
+      }
+
+      /* Key insight / callout */
+      .callout {
+        background: #fffbe6;
+        border-left: 4px solid #f0a500;
+        padding: 0.75em 1.2em;
+        margin: 1.3em 0;
+        border-radius: 0 4px 4px 0;
+        font-size: 17px;
+      }
+      .callout-title {
+        font-weight: bold;
+        color: #b07800;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35em;
+      }
+
+      /* Work-in-progress note */
+      .wip-note {
+        background: #fff5f5;
+        border-left: 4px solid #d04040;
+        padding: 0.6em 1em;
+        margin: 0.8em 0;
+        border-radius: 0 4px 4px 0;
+        font-size: 15px;
+        color: #a00;
+      }
+
+      /* Section divider */
+      .section-divider {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 2.2em 0 1.5em 0;
+      }
+
+      /* Figure caption */
+      .figure-caption {
+        text-align: center;
+        font-size: 13px;
+        color: #666;
+        margin-top: 0.3em;
+        font-style: italic;
+      }
+
+      /* Responsive video grid */
+      .video-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 1.2em 0 0.4em 0;
+      }
+      .video-grid video {
+        border-radius: 4px;
+        width: 100%;
+      }
+      @media (max-width: 600px) {
+        .video-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="progress-bar"></div>
+    <script>
+      window.addEventListener('scroll', function () {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+        document.getElementById('progress-bar').style.width = pct + '%';
+      });
+    </script>
+
+    <table style="width:100%;max-width:1000px;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+      <tr style="padding:0px">
+        <td style="padding:0px">
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr style="padding:0px">
+              <td style="padding:2.5%;width:100%;vertical-align:middle">
+                <p class="name" style="text-align: center; margin-bottom: 0.25em;">
+                  The Hitchhiker's Guide to Contrastive Learning in RL
+                </p>
+                <p style="text-align:center; margin-top: 0;">
+                  <span style="color:#666">Mar 12, 2026</span>
+                  &nbsp;/&nbsp;
+                  <a href="./index.html">Blog</a>
+                  &nbsp;/&nbsp;
+                  <a href="../index.html">Home</a>
+                </p>
+
+                <p>
+                  In this post, I want to briefly discuss how we can leverage contrastive learning in reinforcement learning. I believe that contrastive learning-based methods are really underrated right now as a might be the key to actually scale offline RL methods.
+                </p>
+
+                <!-- Table of Contents -->
+                <nav class="toc">
+                  <div class="toc-title">Contents</div>
+                  <ol>
+                    <li><a href="#background">Background</a>
+                      <ol>
+                        <li><a href="#part1">TD Learning</a></li>
+                        <li><a href="#part2">Intuition Behind Contrastive Learning</a></li>
+                        <li><a href="#part3">C-Learning</a></li>
+                        <li><a href="#part4">Contrastive RL</a>
+                          <ol>
+                            <li><a href="#part4-5">CRL as an Online RL Algorithm</a></li>
+                          </ol>
+                        </li>
+                        <li><a href="#part5">Learning a Quasimetric via Contrastive Learning</a></li>
+                      </ol>
+                    </li>
+                    <li><a href="#closing">Closing Thought</a></li>
+                  </ol>
+                </nav>
+
+                <h2 id="background">Background</h2>
+
+                <hr class="section-divider">
+                <h3 id="part1">Part 1: TD Learning</h3>
+                <p>
+                  Conventionally, Q-learning is performed via one-step TD backups:
+                </p>
+                <div class="eq-box">
+                  $Q(s, a) \leftarrow r + \gamma \max_{a'} Q(s', a')$
+                </div>
+
+                <p>Generally speaking, this method works decently well for control tasks. However, it is easy to realize that the expression $\max_{a'} Q(s', a')$ is biased because we have to take expectations over it. Such bias can cause large bootstrapping error, and it can get <i>pretty</i> bad. About a year ago, <a href="https://seohong.me/blog/q-learning-is-not-yet-scalable/">Seohong</a> showed that because of this bias, it becomes extremely difficult to learn a good goal-reaching policy using simple one-step TD backups.</p>
+
+                <p>In the goal-reaching case, we can modify the objective a little bit, in which we set the sparse reward as a Kronecker delta function: $r(s, g) = \mathbb{1}\{s = g\}$, and condition the Q-function on the goal. This is nice because we can make the substitution below:</p>
+
+                <div class="eq-box">
+                  $Q^\pi(s, a, g) = \mathbb{E}_\pi \!\left[\sum_{t=0}^{\infty} \gamma^t r(s_{t+1}, g) \;\middle|\; s_0 = s,\, a_0 = a\right]$
+                </div>
+
+                <p>Because $\mathbb{E}[\mathbb{1}\{\text{event}\}] = \mathbb{P}\{\text{event}\}$, we can rewrite the Q-function as:</p>
+
+                <div class="eq-box">
+                  $Q^\pi(s, a, g) = \mathbb{E}_\pi \!\left[\sum_{t=0}^{\infty} \gamma^t \mathbb{P}(s_{t+1} = g \mid s_0 = s,\, a_0 = a)\right]$
+                </div>
+
+                <hr class="section-divider">
+                <h3 id="part2">Part 2: Intuition Behind Contrastive Learning as an RL Algorithm</h3>
+                <p>
+                  Contrastive learning was developed based on measuring similarity between pairs of visual data. The key idea of this goes all the way back to practices in pre-internet scale computer vision: given a front profile and a side profile, <a href="https://ieeexplore.ieee.org/document/1467314" target="_blank">how</a> can we match the subjects in the images? <a href="https://arxiv.org/abs/2002.05709" target="_blank">SimCLR</a> then scaled it up by using it as a pretraining objective, and it used the InfoNCE loss as the contrastive objective:
+                </p>
+
+                <div class="wip-note">
+                  &#9998; <strong>Note:</strong> The InfoNCE loss derivation and the rest of Part 2 are still being written.
+                </div>
+
+                <hr class="section-divider">
+                <h3 id="part3">Part 3: C-Learning</h3>
+
+                <p>
+                  Recall from Part 1 that the goal-conditioned Q-function can be written as a discounted sum of reachability probabilities.
+                  <a href="https://arxiv.org/abs/2011.08909" target="_blank">C-Learning</a> (Eysenbach et al., 2020) takes this rewriting seriously
+                  and flips the problem: instead of learning a Q-function via Bellman backups, learn a <em>classifier</em> that directly predicts
+                  whether a future state will equal the goal.
+                </p>
+
+                <p>
+                  Formally, define the <strong>C-function</strong> as a re-scaled version of the Q-function:
+                </p>
+                <div class="eq-box">
+                  $C^\pi(s, a, g) \;=\; (1 - \gamma)\, Q^\pi(s, a, g)$
+                </div>
+                <p>
+                  Because $(1-\gamma) \sum_{t=0}^\infty \gamma^t = 1$ and $Q^\pi(s,a,g) \in [0, 1/(1-\gamma)]$ under sparse rewards,
+                  $C^\pi$ lies in $[0, 1]$ and can be interpreted as a probability. Specifically, it is the probability
+                  that the policy $\pi$ lands on the goal $g$ at a geometrically distributed random future time (with parameter $\gamma$).
+                </p>
+
+                <p>
+                  This probability satisfies a recursive Bellman-like equation, but crucially <strong>without a max over actions</strong>:
+                </p>
+                <div class="eq-box">
+                  $C^\pi(s, a, g) \;=\; (1 - \gamma)\,\mathbb{P}(s' = g \mid s, a) \;+\; \gamma\, \mathbb{E}_{s' \sim T(\cdot|s,a),\, a' \sim \pi(\cdot|s')}\!\left[C^\pi(s', a', g)\right]$
+                </div>
+                <p>
+                  The first term captures the one-step chance of hitting the goal. The second term recurses over the policy rollout.
+                  Because we follow $\pi$ (instead of taking a max), the maximization bias that plagues standard Q-learning vanishes.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">Key Insight</div>
+                  C-Learning turns goal-conditioned value estimation into a supervised binary classification task.
+                  Positive examples are future states drawn from the same trajectory (via hindsight relabeling); negatives are
+                  randomly sampled states. This makes the training signal much more stable than regressing against noisy
+                  TD targets that propagate errors through the max operator.
+                </div>
+
+                <p>
+                  In practice the C-function is trained with a binary cross-entropy loss:
+                </p>
+                <div class="eq-box">
+                  $\mathcal{L}_C = -\mathbb{E}\!\left[\log C^\pi(s, a, g^+) + \log\!\left(1 - C^\pi(s, a, g^-)\right)\right]$
+                </div>
+                <p>
+                  where $g^+$ is a future state on the same trajectory (a "positive" goal) and $g^-$ is sampled independently from the replay buffer
+                  (a "negative"). Policy improvement is then simply: pick the action $a$ that maximizes $C^\pi(s, a, g)$ for the desired goal.
+                </p>
+
+                <p>
+                  <strong>Performance.</strong> In the original paper, C-Learning outperforms goal-conditioned Q-learning (GCSL, hindsight-relabeled DDPG)
+                  on a suite of simulated navigation and manipulation tasks, particularly in the offline and low-data regimes where
+                  bootstrapping error compounds most severely. The removal of the max backup improves stability and makes the method
+                  more amenable to offline datasets collected by a mix of policies.
+                  <!-- ⚠️ DOUBLE CHECK: verify these specific benchmark comparisons against the paper — the tasks and baselines in the
+                       original C-Learning paper (arxiv 2011.08909) should be cited precisely here. -->
+                </p>
+
+                <p>
+                  C-Learning is the conceptual stepping stone to Contrastive RL in the next section. CRL replaces the binary
+                  cross-entropy loss with InfoNCE (multi-class contrastive), which allows more negatives per update and
+                  recovers a log-density-ratio interpretation instead of a raw probability. The core idea — supervision from
+                  future trajectory states, no Bellman max — is shared by both methods.
+                </p>
+
+                <hr class="section-divider">
+                <h3 id="part4">Part 4: Contrastive RL</h3>
+                <p>
+                  C-Learning removes the max over actions in the target, but still relies on temporal bootstrapping. Contrastive RL (CRL) pushes this one step further:
+                  learn a score function from full trajectories, and recover control from that score without explicit one-step TD targets.
+                </p>
+
+                <p>
+                  The core parameterization is an energy model over state-action and goal:
+                </p>
+                <div class="eq-box">
+                  $f_\theta(s, a, g) = \phi_\theta(s, a)^\top \psi_\theta(g)$
+                </div>
+                <p>
+                  Given a positive goal $g^+$ sampled from a future state on the same trajectory and negatives $g^-$ sampled from other states, CRL uses an InfoNCE objective:
+                </p>
+                <div class="eq-box">
+                  $\mathcal{L}_{\mathrm{NCE}} = -\log \dfrac{\exp(f_\theta(s, a, g^+)/\tau)}{\exp(f_\theta(s, a, g^+)/\tau) + \displaystyle\sum_{g^-}\exp(f_\theta(s, a, g^-)/\tau)}$
+                </div>
+
+                <div class="callout">
+                  <div class="callout-title">Key Insight</div>
+                  At optimum (with infinite data, expressive function class, and exact normalization), this score recovers a log-density ratio between
+                  "reachable future goals under the current policy" and the marginal goal distribution. That is why the learned similarity behaves like a
+                  goal-conditioned value proxy.
+                </div>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <img src="https://ben-eysenbach.github.io/assets/contrastive_rl/method_figure.png" alt="Contrastive RL method figure" style="width:100%;max-width:900px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  Figure adapted from the CRL project page/paper: contrastive scoring between $(s,a)$ and future goals.
+                </p>
+
+                <p>
+                  Why is this only <em>approximate</em> policy improvement in practice?
+                </p>
+                <p>
+                  Intuitively, exact policy improvement means: "for each state, pick the action that is truly best under the current policy's
+                  evaluation." CRL instead does: "pick actions that look best under a learned contrastive score from finite data."
+                  If that score is directionally correct, policy quality usually improves; if it is slightly wrong, the policy can still improve but
+                  not by the full greedy amount; if it is very wrong in some regions, updates can even hurt there.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">Geometric Intuition</div>
+                  The actor is climbing a noisy hill. Exact PI climbs the true hill $Q^\pi$; CRL climbs a smoothed and
+                  shifted hill $\hat{Q}_{\mathrm{crl}}$. As long as local gradients are correlated, you move uphill on average, but you should not
+                  expect monotonic exact-improvement guarantees at every iteration.
+                </div>
+
+                <ul>
+                  <li><strong>Finite negatives:</strong> InfoNCE approximates the partition function with a minibatch, so the learned ratio is biased.</li>
+                  <li><strong>Function approximation:</strong> $\phi, \psi$ are neural approximators, so the induced Q-like score is imperfect.</li>
+                  <li><strong>Off-policy distribution shift:</strong> positives/negatives come from replay data, not exactly the current policy occupancy.</li>
+                  <li><strong>Finite horizon truncation:</strong> future-goal sampling from finite rollouts does not match the infinite-horizon objective.</li>
+                </ul>
+                <p>
+                  So CRL gives a strong <i>surrogate</i> for policy improvement, but not a strict exact policy-iteration step except in idealized limits.
+                </p>
+
+                <h4 id="part4-5">Part 4.5: CRL as an Online RL Algorithm</h4>
+                <p>
+                  CRL is naturally compatible with online RL: collect trajectories with the current policy, relabel future states as goals, and optimize the same contrastive objective
+                  in a replay buffer loop. The online setting usually improves coverage of hard-to-reach goals, but the same approximation story remains.
+                </p>
+                <p>
+                  It is also important to separate <strong>what CRL estimates</strong> from a classical behavior-policy Bellman Q-function.
+                  A Bellman critic tries to satisfy
+                  $Q^\beta(s,a,g) = r(s,g) + \gamma \mathbb{E}_{s',a' \sim \beta}[Q^\beta(s',a',g)]$ for a particular behavior policy $\beta$.
+                  CRL does not enforce this one-step consistency equation. Instead, it directly classifies whether $g$ is a future state of $(s,a)$
+                  in sampled rollouts.
+                </p>
+                <p>
+                  Because positives are drawn from realized future trajectory states, CRL is fundamentally Monte-Carlo style supervision over
+                  trajectory outcomes: it learns a discounted reachability / occupancy-ratio signal aggregated over many steps.
+                  That signal can be transformed into a Q-like control objective, but it is not literally the exact Bellman fixed point for the
+                  behavior policy used to collect data.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">Key Trade-off</div>
+                  CRL avoids some one-step max-backup pathologies by trading Bellman recursion bias for Monte-Carlo style
+                  sampling/coverage error. In practice that trade is often favorable for long-horizon, image-based goal-reaching.
+                </div>
+
+                <p>
+                  A useful way to think about it is through an approximate-greedy lens. Suppose the learned score induces an approximate value
+                  $\hat{Q}$ with uniform error $\|\hat{Q} - Q^\pi\|_\infty \le \varepsilon$. Then the greedy policy with respect to $\hat{Q}$ satisfies
+                  a standard performance-loss bound of order $\mathcal{O}(\varepsilon/(1-\gamma)^2)$ relative to exact improvement.
+                  CRL inherits this structure, except $\varepsilon$ now bundles contrastive estimation error + representation error + optimization error.
+                </p>
+                <p>
+                  In other words, online CRL is best interpreted as <strong>approximate policy iteration with a contrastive critic</strong>:
+                </p>
+                <ul>
+                  <li><strong>Evaluation-ish step:</strong> fit a reachability/value proxy using trajectory-level contrastive learning.</li>
+                  <li><strong>Improvement-ish step:</strong> update policy actions to increase the learned score toward the desired goal.</li>
+                  <li><strong>Repeat:</strong> recollect data under the improved policy and refit.</li>
+                </ul>
+                <p>
+                  This framing explains both the strengths (stability against one-step max bias, good scaling to vision-based goals)
+                  and the failures (error accumulation from approximate supervision and imperfect optimization).
+                </p>
+
+                <h4>Emergent Exploration Without Explicit Bonuses</h4>
+                <p>
+                  A striking property of online CRL is that it can solve long-horizon goal-reaching tasks
+                  <em>without any explicit exploration bonus, curiosity reward, or goal curriculum</em>.
+                  <a href="https://arxiv.org/abs/2510.14129" target="_blank">Bastankhah et al. (2025)</a>
+                  study a single-goal variant called <strong>SGCRL</strong> and show that exploration emerges
+                  naturally from the InfoNCE objective interacting with low-rank learned representations.
+                </p>
+
+                <p>
+                  The key observation is that the actor never sees an explicit reward signal — it only maximizes
+                  a quantity the paper calls <strong>$\psi$-similarity</strong>: the inner product
+                  $\phi(s, a)^\top \psi(g)$ between the learned state-action representation and the goal representation.
+                  Under the optimal InfoNCE critic (Theorem 1 of the paper), maximizing this score is equivalent to
+                  maximizing the following discounted goal-similarity return:
+                </p>
+                <div class="eq-box">
+                  $Q^\psi(s, a) \;=\; \mathbb{E}\!\left[\sum_{t=0}^{\infty} \gamma^t \,\psi(s_t)^\top\psi(g)
+                  \;\middle|\; s_0 = s,\, a_0 = a\right]$
+                </div>
+                <p>
+                  This is not an externally engineered bonus — it falls directly out of the contrastive objective.
+                  The actor is climbing a goal-similarity landscape that the critic builds and rebuilds as data accumulates.
+                </p>
+
+                <h4>The Explore-then-Exploit Curriculum</h4>
+                <p>
+                  The representation landscape starts optimistic: at initialization all state embeddings cluster
+                  near $\psi(g)$, so everywhere looks goal-like. As the agent collects unsuccessful trajectories, the
+                  InfoNCE gradients push the embeddings of visited-but-unsuccessful states to become <em>orthogonal</em>
+                  to the goal direction. Formally, the paper's Theorem 2 (informal) shows that for any batch of
+                  unsuccessful state-action pairs $\{(s_i, a_i)\}$, the InfoNCE updates converge to:
+                </p>
+                <div class="eq-box">
+                  $\phi(s_i, a_i)^\top \psi(g) \;=\; \psi(s_{f,i})^\top \psi(g) \;=\; 0, \quad \forall\, i$
+                </div>
+                <p>
+                  Orthogonality means <em>zero implicit reward</em> for those regions: the actor stops being attracted to
+                  them. This creates a natural pruning of dead-ends. Once a trajectory finally succeeds in reaching $g$,
+                  the representations of states along that path acquire high $\psi$-similarity, leaving a high-reward
+                  trace that the actor can exploit in subsequent episodes.
+                </p>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: save Figure 2 from arXiv:2510.14129 locally and update the src below -->
+                  <img src="../images/sgcrl_explore_exploit.png"
+                       alt="SGCRL explore-then-exploit schematic: agent prunes unsuccessful paths and leaves a high-similarity trace on success"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  Figure 2 from Bastankhah et al. (2025). <em>Left:</em> agent moves toward goal-like states.
+                  <em>Center:</em> critic zeros out $\psi$-similarity for states along unsuccessful trajectories,
+                  rendering them repellent. <em>Right:</em> once the goal is found, a high-similarity trace forms
+                  along the successful path for the actor to follow.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">Why No Explicit Exploration Bonus Is Needed</div>
+                  The InfoNCE loss creates a self-correcting reward landscape. Any region visited without reaching
+                  the goal gets its implicit reward reduced to zero — the contrastive updates act as an automatic
+                  "been there, try elsewhere" signal. The agent is never stuck collecting reward in already-explored,
+                  unsuccessful regions.
+                </div>
+
+                <h4>Low-Rank Representations Are the Engine</h4>
+                <p>
+                  A natural question is whether this behavior is a neural-network artifact. The paper rules this out
+                  by replicating the entire explore-then-exploit dynamic in <strong>tabular SGCRL</strong> — using
+                  lookup-table embeddings on a Tower of Hanoi environment with exact dynamics. The same orthogonality
+                  phase transition appears, confirming that the mechanism is a property of the <em>low-rank structure</em>
+                  of contrastive representations, not of neural function approximation.
+                </p>
+                <p>
+                  PCA of the learned embeddings (Figure 4 of the paper) shows the representations evolving in two phases:
+                  initially all representations cluster near the goal direction $z = \psi(g)$; over training, unsuccessful
+                  states collapse into a subspace orthogonal to $z$, while preserving local structure (e.g., which room
+                  a state is in). When a scalar, non-low-rank representation is substituted, the agent requires roughly
+                  $100\times$ more samples to solve the same task.
+                </p>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: save Figure 4 from arXiv:2510.14129 locally and update the src below -->
+                  <img src="../images/sgcrl_pca.png"
+                       alt="PCA of SGCRL representations: initially clustered near goal direction, later orthogonal to it"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  Figure 4 from Bastankhah et al. (2025). PCA projection of learned embeddings over training.
+                  Representations start near the goal direction $z$ (all states look goal-like), then collapse
+                  into an orthogonal subspace as unsuccessful trajectories accumulate — while preserving room-level
+                  spatial structure.
+                </p>
+
+                <h4>Controllable Exploration via Representation Interventions</h4>
+                <p>
+                  Because the actor is fully driven by $\psi$-similarity, the exploration behavior can be directly steered
+                  by patching the learned representations. Figure 6 of the paper demonstrates two interventions:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Attracting the agent:</strong> setting $\psi(s_{\text{room}}) \leftarrow \psi(g)$ for a
+                    specific room caused the agent to substantially increase visitation to that room, confirming that
+                    $\psi$-similarity is the causal driver of navigation, not goal proximity in raw state space.
+                  </li>
+                  <li>
+                    <strong>Safety-aware exploration:</strong> setting $\psi(s_{\text{forbidden}}) \leftarrow {-}\psi(g)$
+                    in a forbidden region caused the agent to systematically avoid it during both training and evaluation,
+                    enabling controllable safe exploration without any reward engineering.
+                  </li>
+                </ul>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: save Figure 6 from arXiv:2510.14129 locally and update the src below -->
+                  <img src="../images/sgcrl_interventions.png"
+                       alt="Figure 6: representation interventions steering SGCRL exploration"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  Figure 6 from Bastankhah et al. (2025). <em>(a)</em> Patching a room's $\psi$ embedding to match
+                  $\psi(g)$ increases visitation (causal confirmation). <em>(b)</em> Setting $\psi(s) = {-}\psi(g)$
+                  in a forbidden region produces safety-aware avoidance with no reward modification.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">Connection to Classical Exploration Theory</div>
+                  The paper formally connects SGCRL's dynamics to <strong>R-MAX</strong>: both start with an optimistic
+                  belief (all states yield maximum reward / high $\psi$-similarity), and exploration progressively
+                  corrects the estimates downward for visited states. This suggests CRL's emergent exploration may
+                  inherit R-MAX's polynomial sample-complexity guarantees in high-dimensional, long-horizon settings —
+                  a direction the authors identify as future work.
+                  <!-- ⚠️ DOUBLE CHECK: the paper's Appendix D.1 contains the formal R-MAX connection; verify you are
+                       comfortable with the strength of this claim before publishing. The polynomial complexity guarantee
+                       is not yet formally proven for SGCRL, only conjectured by analogy. -->
+                </div>
+
+                <div class="video-grid">
+                  <div>
+                    <video muted autoplay loop playsinline>
+                      <source src="https://ben-eysenbach.github.io/assets/contrastive_rl/sawyer_drawer_image.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                  <div>
+                    <video muted autoplay loop playsinline>
+                      <source src="https://ben-eysenbach.github.io/assets/contrastive_rl/sawyer_window_image.mp4" type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+                <p class="figure-caption">
+                  CRL qualitative results from the project page: online goal-reaching behavior in image-based manipulation.
+                </p>
+
+                <hr class="section-divider">
+                <h3 id="part5">Part 5: Distilling a Quasimetric with Contrastive Learning</h3>
+                <p>
+                  
+                </p>
+                <p>
+                  The paper's key identity is that, under the contrastive objective, the optimal critic has the form
+                </p>
+                <div class="eq-box">
+                  $f^*(s,a,g) = \log \dfrac{p_\gamma^\pi(\mathbf{s}^+=g \mid \mathbf{s}_0=s,\,a)}{C\,p_g(g)}$
+                </div>
+                <p>
+                  so it is a log discounted occupancy ratio. This implies a scaled/shifted goal-conditioned Q interpretation
+                  (their Lemma 3.2 discussion): up to goal-only constants, maximizing the critic is equivalent to maximizing a goal-conditioned value.
+                </p>
+                <p>
+                  Why does this recover a "behavior Q" interpretation in offline data?
+                  Because the occupancy term above is induced by whichever policy generated the trajectories.
+                  If the replay comes from a fixed Markov behavior policy $\beta$, then the learned contrastive statistics correspond to
+                  $p_\gamma^\beta(\cdot)$, so the induced Q-like signal is tied to behavior-policy visitation.
+                  In that sense, CMD extracts a behavior-policy value structure from contrastive occupancy statistics.
+                </p>
+                <p>
+                  At the same time, it is important to be precise: CMD is <strong>not</strong> saying
+                  "we directly solve the Bellman equation for $Q^\beta$ via TD recursion."
+                  Instead, CMD estimates successor quantities from contrastive learning and then imposes quasimetric structure
+                  (triangle inequality inductive bias) through either one-step parameterization or two-step distillation.
+                  This is exactly why the method gets long-horizon stitching behavior without relying on fragile one-step max backups.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">CMD in Three Steps</div>
+                  <ul style="margin: 0.4em 0 0 0; padding-left: 1.4em;">
+                    <li><strong>CRL features:</strong> tell you which futures are likely from $(s,a)$ under the dataset policy.</li>
+                    <li><strong>CMD change of variables:</strong> subtracts self-reachability terms to form a valid temporal distance.</li>
+                    <li><strong>Quasimetric distillation:</strong> enforces geometry (triangle inequality), which improves compositional generalization.</li>
+                  </ul>
+                </div>
+
+                <p>
+                  So CMD does not magically make contrastive learning "exact DP." Instead, it extracts policy-dependent successor structure from data,
+                  then shapes it into a distance that is theoretically well behaved in stochastic settings.
+                </p>
+
+                <hr class="section-divider">
+                <h3 id="closing">Closing Thoughts</h3>
+                <p>
+                  
+                </p>
+
+              </td>
+            </tr>
+          </tbody></table>
+
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr>
+              <td style="padding:0px">
+                <br>
+                <p style="text-align:right;font-size:small;">
+                  Website template used from <a href="https://github.com/jonbarron/jonbarron_website">Jon Barron</a>.
+                </p>
+              </td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+    </tbody></table>
+  </body>
+</html>

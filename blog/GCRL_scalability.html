@@ -1,0 +1,698 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>A Practical Approach to Scaling Up Offline GCRL | Bill Zheng</title>
+
+    <meta name="author" content="Bill Zheng">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="../images/seal.svg" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="./style.css">
+
+    <script>
+      window.MathJax = {
+        tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+        svg: { fontCache: 'global' }
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
+    <style>
+      html { scroll-behavior: smooth; }
+
+      h2 {
+        font-weight: bold;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 1.8em;
+        margin-bottom: 0.4em;
+        color: #222;
+      }
+
+      h4 {
+        font-size: 18px;
+        font-weight: bold;
+        font-style: italic;
+        margin-top: 1.4em;
+        margin-bottom: 0.3em;
+        color: #333;
+      }
+
+      /* Reading progress bar */
+      #progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: #1772d0;
+        width: 0%;
+        z-index: 1000;
+        transition: width 0.1s linear;
+      }
+
+      /* Table of contents */
+      .toc {
+        background: #f8f9fa;
+        border-left: 3px solid #1772d0;
+        padding: 1em 1.5em;
+        margin: 1.5em 0 2em 0;
+        border-radius: 0 4px 4px 0;
+      }
+      .toc-title {
+        font-weight: bold;
+        font-size: 15px;
+        color: #333;
+        margin-bottom: 0.6em;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .toc ol {
+        margin: 0;
+        padding-left: 1.4em;
+        font-size: 16px;
+        line-height: 1.7;
+      }
+      .toc li { margin: 0.15em 0; }
+      .toc a { color: #1772d0; }
+      .toc a:hover { color: #f09228; }
+      .toc ol ol {
+        list-style-type: lower-alpha;
+        padding-left: 1.2em;
+        font-size: 15px;
+      }
+
+      /* Styled equation box */
+      .eq-box {
+        background: #f0f4ff;
+        border: 1px solid #f0f4ff;
+        border-radius: 6px;
+        padding: 0.9em 1.5em;
+        margin: 1.1em 0;
+        text-align: center;
+        overflow-x: auto;
+      }
+
+      /* Key insight / callout */
+      .callout {
+        background: #fffbe6;
+        border-left: 4px solid #f0a500;
+        padding: 0.75em 1.2em;
+        margin: 1.3em 0;
+        border-radius: 0 4px 4px 0;
+        font-size: 17px;
+      }
+      .callout-title {
+        font-weight: bold;
+        color: #b07800;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35em;
+      }
+
+      /* Work-in-progress note */
+      .wip-note {
+        background: #fff5f5;
+        border-left: 4px solid #d04040;
+        padding: 0.6em 1em;
+        margin: 0.8em 0;
+        border-radius: 0 4px 4px 0;
+        font-size: 15px;
+        color: #a00;
+      }
+
+      /* Section divider */
+      .section-divider {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 2.2em 0 1.5em 0;
+      }
+
+      /* Figure caption */
+      .figure-caption {
+        text-align: center;
+        font-size: 13px;
+        color: #666;
+        margin-top: 0.3em;
+        font-style: italic;
+      }
+
+      /* Responsive video grid */
+      .video-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 1.2em 0 0.4em 0;
+      }
+      .video-grid video {
+        border-radius: 4px;
+        width: 100%;
+      }
+      @media (max-width: 600px) {
+        .video-grid { grid-template-columns: 1fr; }
+      }
+
+      /* Results table */
+      .results-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 15px;
+        margin: 1.2em 0;
+      }
+      .results-table th {
+        background: #1772d0;
+        color: #fff;
+        padding: 0.55em 0.9em;
+        text-align: center;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+      }
+      .results-table th.method-col {
+        text-align: left;
+      }
+      .results-table td {
+        padding: 0.5em 0.9em;
+        border-bottom: 1px solid #e0e0e0;
+        text-align: center;
+      }
+      .results-table td.method-col {
+        text-align: left;
+        font-weight: 500;
+      }
+      .results-table tr:nth-child(even) {
+        background: #f8f9fa;
+      }
+      .results-table tr.highlight {
+        background: #fffbe6;
+        font-weight: bold;
+      }
+      .results-table tr.highlight td {
+        border-bottom: 2px solid #f0a500;
+      }
+      .results-table thead tr {
+        border-bottom: 2px solid #1772d0;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="progress-bar"></div>
+    <script>
+      window.addEventListener('scroll', function () {
+        var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+        var scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+        document.getElementById('progress-bar').style.width = pct + '%';
+      });
+    </script>
+
+    <table style="width:100%;max-width:1000px;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+      <tr style="padding:0px">
+        <td style="padding:0px">
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr style="padding:0px">
+              <td style="padding:2.5%;width:100%;vertical-align:middle">
+                <p class="name" style="text-align: center; margin-bottom: 0.25em;">
+                  A Practical Approach to Scaling Up Offline GCRL
+                </p>
+                <p style="text-align:center; margin-top: 0;">
+                  <span style="color:#666">Mar 12, 2026</span>
+                  &nbsp;/&nbsp;
+                  <a href="./index.html">Blog</a>
+                  &nbsp;/&nbsp;
+                  <a href="../index.html">Home</a>
+                </p>
+
+                <p>
+                  Offline goal-conditioned RL (GCRL) has long struggled to scale: one-step TD backups accumulate
+                  maximization bias, and learned value functions degrade quickly over long horizons. In this post I will 
+                  walk through <strong>Temporal Metric Distillation (TMD)</strong> — an approach that leverages both MC and TD updates, which allows us to scale up GCRL without explicit horizon reduction.
+                </p>
+
+                <!-- Table of Contents -->
+                <nav class="toc">
+                  <div class="toc-title">Contents</div>
+                  <ol>
+                    <li><a href="#background">Background</a>
+                      <ol>
+                        <li><a href="#part1">Problem Formulation: Why TD Fails at Scale</a></li>
+                        <li><a href="#part2">Temporal Metric Distillation</a>
+                          <ol>
+                            <li><a href="#part2-1">The Temporal Distance Objective</a></li>
+                            <li><a href="#part2-2">Quasimetric Properties and Why They Matter</a></li>
+                            <li><a href="#part2-3">Distilling from the Behavior Policy</a></li>
+                          </ol>
+                        </li>
+                        <li><a href="#part3">What Makes TMD Desirable for Scaling Offline RL</a></li>
+                        <li><a href="#part4">Practical Implementations</a>
+                          <ol>
+                            <li><a href="#part4-1">Network Architecture</a></li>
+                            <li><a href="#part4-2">Imposing Optimality Constraints</a></li>
+                            <li><a href="#part4-3">Learning a Policy from the Quasimetric</a></li>
+                            <li><a href="#part4-4">Experimental Results</a></li>
+                          </ol>
+                        </li>
+                      </ol>
+                    </li>
+                    <li><a href="#results">Results</a></li>
+                    <li><a href="#closing">Closing Thought</a></li>
+                  </ol>
+                </nav>
+
+                <h2 id="background">Background</h2>
+
+                <!-- ───────────────────────────── Part 1 ───────────────────────────── -->
+                <hr class="section-divider">
+                <h3 id="part1">Part 1: Problem Formulation — Why TD Fails to Scale</h3>
+                <p>
+                  Conventionally, Q-learning is performed via one-step TD backups:
+                </p>
+                <div class="eq-box">
+                  $Q(s, a) \leftarrow r + \gamma \max_{a'} Q(s', a')$
+                </div>
+
+                <p>
+                  Generally speaking, this method works decently well for most control tasks. However, it is easy
+                  to realize that the the target estimate is biased because of the max operator $\max_{a'} Q(s', a')$. Alternatively, we can use a Monte Carlo estimate to get a better target estimate:
+                <div class="eq-box">
+                  $Q^{\text{MC}}(s, a) = \mathbb{E}_\pi \left[ \sum_{k=0}^{T-1} \gamma^k r_{t+k} \;\middle|\; s_t = s,\, a_t = a \right]$
+                </div>
+                <p>
+                  $Q^{\text{MC}}(s, a)$ avoids the problem of bias as compared to one-step TD, as the sum of rewards is a better estimate than the target network. However, it suffers from higher variance compared to one-step TD. In the 
+                </p>
+                </p>
+
+                <p>
+                  In the goal-reaching case, we set the sparse reward as an indicator:
+                  $r(s, g) = \mathbb{1}\{s = g\}$ and condition the Q-function on the goal:
+                </p>
+                <div class="eq-box">
+                  $Q^\pi(s, a, g) = \mathbb{E}_\pi\!\left[\sum_{t=0}^{\infty} \gamma^t \mathbb{P}(s_{t+1} = g \mid s_0 = s,\, a_0 = a)\right]$
+                </div>
+
+                <p>
+                  This probabilistic rewriting is attractive, but it still relies on Bellman backups: any error
+                  in the one-step target propagates multiplicatively. On large offline datasets — where the behavior
+                  policy may be suboptimal and the state space is high-dimensional — the bias-variance tradeoff
+                  tilts toward catastrophic failure. The key challenge is to learn a <em>long-horizon</em>
+                  goal-reaching objective that scales with data size without compounding bootstrapping error.
+                </p>
+
+                <!-- ───────────────────────────── Part 2 ───────────────────────────── -->
+                <hr class="section-divider">
+                <h3 id="part2">Part 2: Temporal Metric Distillation</h3>
+
+                <div class="wip-note">
+                  &#9998; <strong>Note:</strong> The derivations in this section follow
+                  <!-- ⚠️ DOUBLE CHECK: add full citation / paper link here -->
+                  the TMD paper. Verify equation numbering and notation match the published version before finalizing.
+                </div>
+
+                <p>
+                  Contrastive learning was developed to measure similarity between pairs of data. The key insight
+                  applied to goal-conditioned RL is that <em>temporal proximity is a natural similarity signal</em>:
+                  two states that are close in time under some policy should be similar in representation space,
+                  while states far apart in time should not. Temporal Metric Distillation (TMD) operationalizes
+                  this intuition by learning a <strong>quasimetric</strong> — an asymmetric temporal distance —
+                  directly from offline trajectory data via a contrastive objective.
+                </p>
+
+                <h4 id="part2-1">The Temporal Distance Objective</h4>
+                <p>
+                  Let $d^\pi(s, g)$ denote the expected discounted number of steps for policy $\pi$ to travel
+                  from state $s$ to goal $g$. Formally, this is the negative log of the goal-conditioned
+                  discounted state occupancy:
+                </p>
+                <div class="eq-box">
+                  $d^\pi(s, g) = -\log\, p^\pi_\gamma(g \mid s)
+                  \;=\; -\log\!\left[(1-\gamma)\sum_{t=0}^\infty \gamma^t \mathbb{P}^\pi(s_t = g \mid s_0 = s)\right]$
+                </div>
+                <p>
+                  Rather than learning this via Bellman backups (which reintroduces the bias problem), TMD uses a
+                  contrastive InfoNCE loss to directly fit $d^\pi$. Positive pairs are $(s_t, s_{t+\Delta})$ where
+                  $\Delta \sim \mathrm{Geom}(1-\gamma)$ is a geometrically distributed lookahead; negatives are
+                  states drawn from the marginal data distribution:
+                </p>
+                <div class="eq-box">
+                  $\mathcal{L}_{\mathrm{TMD}} = -\mathbb{E}\!\left[\log \frac{\exp(-d_\theta(s, g^+))}
+                  {\exp(-d_\theta(s, g^+)) + \displaystyle\sum_{g^-} \exp(-d_\theta(s, g^-))}\right]$
+                </div>
+                <p>
+                  At the optimum (with a large enough negative batch), the minimizer $d_\theta^*$ recovers the
+                  true log-density ratio, and therefore the true temporal distance $d^\pi$.
+                </p>
+
+                <div class="callout">
+                  <div class="callout-title">No Bootstrapping Required</div>
+                  Unlike TD learning, TMD supervises $d_\theta$ directly from trajectory samples.
+                  There is no one-step target to regress against and no max-over-actions bias to propagate.
+                  The loss is well-posed as a standard classification problem: "is this state a future state
+                  of this context, or not?"
+                </div>
+
+                <h4 id="part2-2">Quasimetric Properties and Why They Matter</h4>
+                <p>
+                  A <strong>quasimetric</strong> is a distance function that satisfies non-negativity, identity
+                  ($d(s,s) = 0$), and the triangle inequality, but <em>not</em> symmetry: $d(s,g) \ne d(g,s)$
+                  in general. Temporal distance is naturally asymmetric — getting from $s$ to $g$ may be easy
+                  while the reverse is hard. Forcing symmetry (as standard metric learning does) corrupts the
+                  geometry and leads to poor long-horizon plans.
+                </p>
+                <p>
+                  The triangle inequality is particularly important for scalability: it means the learned metric
+                  can be <em>composed</em>. If the agent knows $d(s, z)$ and $d(z, g)$ for some intermediate
+                  waypoint $z$, it can upper-bound $d(s,g)$ without ever having seen the pair $(s,g)$ in the
+                  offline dataset. This is the key property that allows TMD to generalize to out-of-distribution
+                  goal distances at scale.
+                </p>
+                <div class="eq-box">
+                  $d(s, g) \;\le\; d(s, z) + d(z, g) \quad \forall\, z$
+                </div>
+
+                <div class="callout">
+                  <div class="callout-title">Why Symmetric Metrics Fail Long-Horizon Planning</div>
+                  Symmetric distance functions collapse forward and backward reachability into a single number.
+                  In practice this means the metric overestimates difficulty for easy-to-reach goals (creating
+                  over-conservative plans) and underestimates difficulty for hard-to-reach ones (causing the
+                  policy to overshoot). The quasimetric constraint corrects both failure modes.
+                </div>
+
+                <h4 id="part2-3">Distilling from the Behavior Policy</h4>
+                <p>
+                  The key "distillation" step in TMD is that the temporal distance is first estimated under the
+                  <em>behavior policy</em> $\beta$ that collected the offline dataset — not under the target policy
+                  we want to learn. This behavior-policy distance $d^\beta$ is the quantity that the contrastive
+                  loss directly supervises, since all trajectory data comes from $\beta$.
+                </p>
+                <p>
+                  To close the gap between $d^\beta$ and the optimal-policy distance $d^*$, TMD adds a
+                  <strong>pessimism correction</strong>: state-goal pairs that are rarely co-visited in the dataset
+                  receive a penalty, ensuring the learned policy does not over-exploit out-of-distribution
+                  regions. The corrected objective is:
+                </p>
+                <div class="eq-box">
+                  $\hat{d}(s, g) = d^\beta_\theta(s, g) + \lambda \cdot \mathrm{unc}(s, g)$
+                </div>
+                <p>
+                  where $\mathrm{unc}(s,g)$ is an uncertainty estimate (e.g., from an ensemble or from low
+                  density in the learned representation space) and $\lambda > 0$ controls the conservatism level.
+                  <!-- ⚠️ DOUBLE CHECK: verify the exact form of the pessimism correction used in the paper -->
+                </p>
+
+                <!-- ───────────────────────────── Part 3 ───────────────────────────── -->
+                <hr class="section-divider">
+                <h3 id="part3">Part 3: What Makes TMD Desirable for Scaling Offline RL</h3>
+
+                <p>
+                  Standard offline RL algorithms degrade for three compounding reasons as dataset size grows:
+                  (i) bootstrapping error amplifies with horizon, (ii) distribution shift between the behavior
+                  policy and the greedy policy worsens under OOD state-action queries, and (iii) sparse-reward
+                  goal relabeling produces many uninformative training pairs. TMD addresses all three.
+                </p>
+
+                <ul>
+                  <li>
+                    <strong>No bootstrapping error.</strong> The contrastive loss is supervised directly from
+                    trajectory pairs. There is no recursive target computation, so error does not compound
+                    with horizon length. This means TMD scales to tasks that require hundreds of steps of
+                    planning — regimes where TD-based methods exhibit catastrophic value overestimation.
+                  </li>
+                  <li>
+                    <strong>Offline-compatible negative sampling.</strong> InfoNCE negatives are drawn from
+                    the marginal state distribution in the replay buffer, not from the current policy.
+                    This makes the loss well-defined and unbiased even when no online interaction is available.
+                  </li>
+                  <li>
+                    <strong>Composable representations enable subgoal chaining.</strong> Because the quasimetric
+                    satisfies the triangle inequality by construction, a learned $d_\theta$ can be used to
+                    construct hierarchical planners: select a subgoal $z$ that minimizes $d(s,z) + d(z,g)$,
+                    then execute a low-level policy to reach $z$. This hierarchical structure is what allows
+                    TMD to tackle tasks beyond what flat offline policies can reach.
+                  </li>
+                  <li>
+                    <strong>Scales favorably with data.</strong> The contrastive objective is a classification
+                    problem: more data tightens the InfoNCE bound on the log-density ratio and directly reduces
+                    estimation error. Unlike Q-learning, which can destabilize with larger replay buffers (due
+                    to off-policy distribution mismatch in the target), TMD benefits monotonically from scale.
+                  </li>
+                </ul>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: replace with actual figure from the TMD paper -->
+                  <img src="../images/tmd_overview.png"
+                       alt="TMD overview: contrastive temporal distance learning on offline data"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  <!-- ⚠️ DOUBLE CHECK: update caption to match the actual paper figure -->
+                  TMD overview. The contrastive objective pulls together representations of state-goal pairs
+                  that are temporally close (positive pairs, drawn $\Delta \sim \mathrm{Geom}(1-\gamma)$ steps apart)
+                  and pushes apart pairs drawn from the marginal (negatives). The learned quasimetric is then used
+                  directly for policy extraction.
+                </p>
+
+                <!-- ───────────────────────────── Part 4 ───────────────────────────── -->
+                <hr class="section-divider">
+                <h3 id="part4">Part 4: Practical Implementations</h3>
+
+                <p>
+                  The theoretical appeal of TMD is clear, but making it work at scale requires careful engineering.
+                  Below are the three implementation axes that matter most.
+                </p>
+
+                <h4 id="part4-1">Architecture</h4>
+                <p>
+                  The distance function $d_\theta(s, g)$ is parameterized as a <strong>bi-encoder</strong>:
+                  a state encoder $\phi_\theta$ and a goal encoder $\psi_\theta$, with distance computed as a
+                  learned asymmetric combination of their outputs. Two design choices significantly affect
+                  scalability:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Low-rank inner product.</strong> Computing $d_\theta(s,g) = -\phi_\theta(s)^\top \psi_\theta(g)$
+                    (negative inner product in a shared embedding space) keeps the metric differentiable and
+                    GPU-friendly. The low-rank structure also encourages the representations to encode
+                    temporally meaningful geometry (see the exploration analysis in Part 4.5 of the
+                    Contrastive RL post).
+                  </li>
+                  <li>
+                    <strong>Quasimetric enforcement.</strong> Triangle inequality is not automatically satisfied
+                    by a raw neural network. Practical implementations either use a <em>metric-constrained
+                    architecture</em> (e.g., IQE or MRN-style networks that compose scalar distances) or
+                    enforce the constraint softly via a regularization term on sampled triplets:
+                    $\max(0,\, d_\theta(s,g) - d_\theta(s,z) - d_\theta(z,g))$.
+                    <!-- ⚠️ DOUBLE CHECK: verify which enforcement strategy the TMD paper uses -->
+                  </li>
+                </ul>
+
+                <div class="callout">
+                  <div class="callout-title">Diagonal vs. Full Quasimetric Heads</div>
+                  A common shortcut is to use a symmetric inner product (i.e., $\phi = \psi$). This is
+                  computationally cheaper and stable, but sacrifices the asymmetry that makes temporal
+                  distances useful for directed planning. In practice, keeping $\phi \ne \psi$ is worth
+                  the extra parameters for any task with clearly directed dynamics (e.g., robotic manipulation,
+                  navigation).
+                </div>
+
+                <h4 id="part4-2">Training Tricks</h4>
+                <p>
+                  Several details matter for making the InfoNCE loss work well on offline datasets:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Large negative batches.</strong> The InfoNCE bound on the temporal distance is
+                    tighter with more negatives. In practice, a negative batch size of 512–4096 (depending
+                    on GPU memory) is needed for the loss to provide a meaningful gradient signal.
+                    <!-- ⚠️ DOUBLE CHECK: verify recommended batch sizes from the TMD paper's ablations -->
+                  </li>
+                  <li>
+                    <strong>Geometric horizon sampling.</strong> Positives are drawn $\Delta \sim \mathrm{Geom}(1-\gamma)$
+                    steps ahead of the context state. This geometric weighting matches the discounted occupancy
+                    measure exactly and avoids the bias introduced by uniform horizon sampling.
+                  </li>
+                  <li>
+                    <strong>Representation stop-gradient.</strong> When computing the InfoNCE loss, stopping
+                    the gradient through the negative representations (as in MoCo-style contrastive learning)
+                    can prevent representation collapse in the low-data regime.
+                  </li>
+                  <li>
+                    <strong>Pessimism via ensemble disagreement.</strong> An ensemble of $K$ independently
+                    initialized $d_\theta^{(k)}$ networks provides a cheap uncertainty estimate:
+                    $\mathrm{unc}(s,g) = \mathrm{std}_k[d_\theta^{(k)}(s,g)]$. This is used to compute the
+                    pessimistic distance $\hat{d}$ during policy extraction without additional forward passes.
+                    <!-- ⚠️ DOUBLE CHECK: verify ensemble size K used in the paper (commonly K=5 or K=10) -->
+                  </li>
+                </ul>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: replace with the ablation / training curve figure from the TMD paper -->
+                  <img src="../images/tmd_training.png"
+                       alt="TMD training curve and ablations"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  <!-- ⚠️ DOUBLE CHECK: update caption -->
+                  Ablation results showing the impact of negative batch size and geometric horizon sampling
+                  on the quality of the learned temporal metric.
+                </p>
+
+                <h4 id="part4-3">Policy Extraction</h4>
+                <p>
+                  Once $\hat{d}_\theta$ is trained, there are two main strategies for extracting a policy:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Implicit policy (actor-free).</strong> At test time, retrieve the action from the
+                    offline dataset whose next state minimizes $\hat{d}_\theta(s', g)$:
+                    $a^* = \arg\min_{a \in \mathcal{D}(s)} \hat{d}_\theta(T(s,a), g)$.
+                    This is nearest-neighbor planning in metric space — no policy network needed.
+                    Works well when the dataset covers the goal-reaching paths densely.
+                  </li>
+                  <li>
+                    <strong>Explicit actor with metric-shaped reward.</strong> Train an actor network to
+                    minimize $\hat{d}_\theta(s', g)$ by treating $-\hat{d}_\theta$ as a reward signal.
+                    This allows generalization beyond the dataset support but introduces the usual
+                    offline policy optimization challenges (e.g., OOD action queries).
+                  </li>
+                </ul>
+
+                <div class="callout">
+                  <div class="callout-title">Hierarchical Planning via Subgoal Selection</div>
+                  For long-horizon tasks, the triangle inequality unlocks a simple planning loop: at each
+                  decision step, select the subgoal $z^* = \arg\min_{z \in \mathcal{D}} [d_\theta(s, z) +
+                  d_\theta(z, g)]$, then execute the low-level policy toward $z^*$ for $H$ steps. This
+                  hierarchical decomposition is what distinguishes TMD from flat offline RL methods and is
+                  responsible for most of its gains on long-horizon benchmarks.
+                </div>
+
+                <!-- ───────────────────────────── Results ───────────────────────────── -->
+                <hr class="section-divider">
+                <h2 id="results">Results</h2>
+
+                <p>
+                  The table below summarizes performance across standard offline GCRL benchmarks. Numbers are
+                  mean success rate (%) averaged over the last 10 evaluation episodes and 3 seeds.
+                  <!-- ⚠️ DOUBLE CHECK: verify all numbers against the paper's Table 1 / Table 2 -->
+                </p>
+
+                <div class="wip-note">
+                  &#9998; <strong>Numbers to verify:</strong> the results below are placeholders. Replace every
+                  cell with the exact numbers from the TMD paper. Also confirm whether the comparison baselines
+                  (HIQL, QRL, IQL-GC, CRL) use the same dataset split and evaluation protocol.
+                </div>
+
+                <table class="results-table">
+                  <thead>
+                    <tr>
+                      <th class="method-col">Method</th>
+                      <th>AntMaze<br><small>umaze</small></th>
+                      <th>AntMaze<br><small>medium</small></th>
+                      <th>AntMaze<br><small>large</small></th>
+                      <th>Kitchen<br><small>complete</small></th>
+                      <th>Kitchen<br><small>partial</small></th>
+                      <th>Avg.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="method-col">IQL-GC</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                    </tr>
+                    <tr>
+                      <td class="method-col">CRL</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                    </tr>
+                    <tr>
+                      <td class="method-col">QRL</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                    </tr>
+                    <tr>
+                      <td class="method-col">HIQL</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                    </tr>
+                    <tr class="highlight">
+                      <td class="method-col">TMD (ours)</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                      <td>??</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p class="figure-caption">
+                  <!-- ⚠️ DOUBLE CHECK: update table caption and benchmark names to match the paper exactly -->
+                  Offline GCRL success rates (%). Higher is better. TMD (highlighted) is compared against
+                  goal-conditioned IQL, Contrastive RL, Quasimetric RL, and Hierarchical IQL across
+                  AntMaze and FrankaKitchen benchmarks from the D4RL suite.
+                </p>
+
+                <p style="text-align:center; margin: 1.2em 0 0.4em 0;">
+                  <!-- ⚠️ DOUBLE CHECK: replace with the main results figure / bar chart from the TMD paper -->
+                  <img src="../images/tmd_results.png"
+                       alt="TMD results bar chart comparing to baselines"
+                       style="width:100%;max-width:860px;border-radius:4px;">
+                </p>
+                <p class="figure-caption">
+                  <!-- ⚠️ DOUBLE CHECK: update caption -->
+                  Bar chart of success rates from the main results figure. TMD consistently outperforms
+                  flat offline RL baselines on long-horizon tasks (AntMaze large, Kitchen complete),
+                  with smaller but consistent gains on shorter-horizon ones.
+                </p>
+
+                <!-- ───────────────────────────── Closing ───────────────────────────── -->
+                <hr class="section-divider">
+                <h2 id="closing">Closing Thought</h2>
+                <p>
+                  For me, the most useful shift was to treat horizon generalization as a
+                  <em>representation problem</em> rather than an optimization problem: if the geometry of the
+                  learned metric is wrong, more compute often just fits the short-horizon training distribution
+                  harder. TMD reframes the question — instead of asking "how do I stabilize TD over long
+                  horizons?", it asks "what is the right contrastive loss to make temporal structure explicit?"
+                  That reframing is what makes it a credible path toward scalable offline GCRL.
+                </p>
+
+              </td>
+            </tr>
+          </tbody></table>
+
+          <table style="width:100%;border:0px;border-spacing:0px;border-collapse:separate;margin-right:auto;margin-left:auto;"><tbody>
+            <tr>
+              <td style="padding:0px">
+                <br>
+                <p style="text-align:right;font-size:small;">
+                  Website template used from <a href="https://github.com/jonbarron/jonbarron_website">Jon Barron</a>.
+                </p>
+              </td>
+            </tr>
+          </tbody></table>
+        </td>
+      </tr>
+    </tbody></table>
+  </body>
+</html>
